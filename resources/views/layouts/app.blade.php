@@ -55,8 +55,11 @@
     @endif
 
     <div class="flex h-screen overflow-hidden">
-        <!-- SIDEBAR -->
-        <aside class="w-64 bg-white dark:bg-darkcard border-r border-gray-200 dark:border-gray-700 hidden md:flex flex-col">
+        <!-- OVERLAY (Mobile Offcanvas) -->
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden"></div>
+
+        <!-- SIDEBAR (Offcanvas di mobile, statis di desktop) -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-darkcard border-r border-gray-200 dark:border-gray-700 flex flex-col fixed inset-y-0 left-0 z-40 -translate-x-full transition-transform duration-300 md:static md:translate-x-0 md:z-auto">
             <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold mr-3">L</div>
                 <span class="text-lg font-bold tracking-wide">LABKOM</span>
@@ -131,7 +134,12 @@
         <!-- MAIN CONTENT -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-darkcard border-b border-gray-200 dark:border-gray-700">
-                <div class="md:hidden font-bold text-lg">LabKom</div>
+                <div class="flex items-center gap-3 md:hidden">
+                    <button id="sidebar-toggle" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white focus:outline-none" aria-label="Buka menu">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    </button>
+                    <span class="font-bold text-lg">LabKom</span>
+                </div>
                 <div class="flex items-center space-x-4 ml-auto">
                     <button id="theme-toggle" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700">
                         <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -195,6 +203,22 @@
             }
             setIcons();
         });
+
+        // Offcanvas Sidebar (Mobile)
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function openSidebar() {
+            sidebar?.classList.remove('-translate-x-full');
+            sidebarBackdrop?.classList.remove('hidden');
+        }
+        function closeSidebar() {
+            sidebar?.classList.add('-translate-x-full');
+            sidebarBackdrop?.classList.add('hidden');
+        }
+        sidebarToggle?.addEventListener('click', openSidebar);
+        sidebarBackdrop?.addEventListener('click', closeSidebar);
     </script>
 </body>
 </html>
