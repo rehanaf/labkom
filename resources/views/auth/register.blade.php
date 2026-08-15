@@ -17,8 +17,7 @@
                     class="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14a7 7 0 007 7h0a7 7 0 007-7V9M12 14a7 7 0 007 7h0a7 7 0 007-7V9M12 14a7 7 0 007 7h0a7 7 0 007-7V9" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
             </div>
@@ -46,7 +45,6 @@
                 <option value="" disabled selected>Pilih Peran</option>
                 <option value="mahasiswa" {{ old('role') == 'mahasiswa' ? 'selected' : '' }}>Mahasiswa</option>
                 <option value="dosen" {{ old('role') == 'dosen' ? 'selected' : '' }}>Dosen</option>
-                <option value="admin_labkom" {{ old('role') == 'admin_labkom' ? 'selected' : '' }}>Admin Labkom</option>
             </select>
         </div>
 
@@ -133,20 +131,13 @@
             function toggleFields() {
                 const role = roleSelect.value;
 
-                if (role === 'admin_labkom') {
-                    nimNipField.style.display = 'none';
-                    jurusanField.style.display = 'none';
-                    nimNipInput.removeAttribute('required');
-                    jurusanInput.removeAttribute('required');
-                } else {
-                    nimNipField.style.display = 'block';
-                    jurusanField.style.display = 'block';
-                    nimNipInput.setAttribute('required', 'required');
-                    jurusanInput.setAttribute('required', 'required');
+                nimNipField.style.display = 'block';
+                jurusanField.style.display = 'block';
+                nimNipInput.setAttribute('required', 'required');
+                jurusanInput.setAttribute('required', 'required');
 
-                    // Update label
-                    nimNipLabel.textContent = role === 'mahasiswa' ? 'NIM (Mahasiswa)' : 'NIP (Dosen)';
-                }
+                // Update label
+                nimNipLabel.textContent = role === 'mahasiswa' ? 'NIM (Mahasiswa)' : 'NIP (Dosen)';
             }
 
             // Inisialisasi

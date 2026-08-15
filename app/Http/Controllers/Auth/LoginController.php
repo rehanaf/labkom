@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -34,13 +35,20 @@ class LoginController extends Controller
         // Logic penentuan field login (email atau nim_nip)
         $fieldType = filter_var($identity, FILTER_VALIDATE_EMAIL) ? 'email' : 'nim_nip';
 
-        // Sanitasi input NIM/NIP jika bukan email
-        if ($fieldType === 'nim_nip') {
-            $identity = str_replace([' ', '-', '.'], '', strtoupper($identity));
+        // Cari user dengan perbandingan case-insensitive
+        // (email & NIM/NIP tidak peka huruf besar/kecil)
+        $user = null;
+        if ($fieldType === 'email') {
+            $user = User::whereRaw('LOWER(email) = ?', [strtolower(trim($identity))])->first();
+        } else {
+            // Normalisasi NIM/NIP: hapus spasi, strip, dan titik, lalu samakan case
+            $sanitized = str_replace([' ', '-', '.'], '', strtoupper($identity));
+            $user = User::whereRaw('LOWER(nim_nip) = ?', [strtolower($sanitized)])->first();
         }
 
-        // Mencoba otentikasi
-        if (Auth::attempt([$fieldType => $identity, 'password' => $password], $request->boolean('remember'))) {
+        // Verifikasi password dengan hash yang tersimpan
+        if ($user && Hash::check($password, $user->password)) {
+            Auth::login($user, $request->boolean('remember'));
             $request->session()->regenerate();
 
             // Redirect ke halaman HOME/DASHBOARD setelah login berhasil

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Peminjaman;
 use App\Models\Laboratorium;
+use App\Models\Peminjaman;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,8 +11,10 @@ class PeminjamanController extends Controller
 {
     public function __construct()
     {
-        // Middleware 'auth' memastikan hanya user login yang bisa akses
-        $this->middleware('auth');
+        // Middleware 'auth' untuk semua aksi KECUALI 'index' (publik).
+        // Aksi selain index (create/store/edit/update/destroy) sudah dilindungi
+        // juga oleh grup 'auth' di routes/web.php.
+        $this->middleware('auth')->except('index');
     }
 
     /**
@@ -24,8 +26,8 @@ class PeminjamanController extends Controller
     {
         $user = Auth::user();
 
-        if (in_array($user->role, ['admin_labkom', 'dosen'])) {
-            // Admin & Dosen melihat semua data, urut dari terbaru
+        if (! $user || in_array($user->role, ['admin_labkom', 'dosen'])) {
+            // Tamu (publik), Admin & Dosen melihat semua data, urut dari terbaru
             $peminjamans = Peminjaman::with(['user', 'laboratorium'])->latest()->get();
         } else {
             // Mahasiswa hanya melihat data miliknya sendiri
@@ -51,7 +53,7 @@ class PeminjamanController extends Controller
 
         // Ambil data lab untuk dipilih di form
         $laboratoriums = Laboratorium::all();
-        
+
         return view('peminjaman.create', compact('laboratoriums'));
     }
 
@@ -91,7 +93,7 @@ class PeminjamanController extends Controller
     public function edit(Peminjaman $peminjaman)
     {
         // Pastikan hanya Admin atau Dosen yang bisa akses halaman ini
-        if (!in_array(Auth::user()->role, ['admin_labkom', 'dosen'])) {
+        if (! in_array(Auth::user()->role, ['admin_labkom', 'dosen'])) {
             return redirect()->route('peminjaman.index')
                 ->with('error', 'Anda tidak memiliki hak akses untuk memverifikasi peminjaman.');
         }
@@ -105,7 +107,7 @@ class PeminjamanController extends Controller
     public function update(Request $request, Peminjaman $peminjaman)
     {
         // Pastikan hanya Admin atau Dosen yang bisa update
-        if (!in_array(Auth::user()->role, ['admin_labkom', 'dosen'])) {
+        if (! in_array(Auth::user()->role, ['admin_labkom', 'dosen'])) {
             return redirect()->route('peminjaman.index')
                 ->with('error', 'Akses ditolak.');
         }
@@ -131,7 +133,7 @@ class PeminjamanController extends Controller
         // Logika Hapus:
         // 1. Admin bisa hapus apa saja.
         // 2. Mahasiswa hanya bisa hapus miliknya SENDIRI dan jika status masih PENDING.
-        
+
         if ($user->role === 'mahasiswa') {
             if ($peminjaman->user_id !== $user->id) {
                 return back()->with('error', 'Anda tidak berhak menghapus data ini.');

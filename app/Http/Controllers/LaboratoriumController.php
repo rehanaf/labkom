@@ -23,7 +23,7 @@ class LaboratoriumController extends Controller
     {
         // Mengambil semua data lab, diurutkan terbaru
         $laboratoriums = Laboratorium::latest()->get();
-        
+
         return view('laboratorium.index', compact('laboratoriums'));
     }
 
@@ -56,15 +56,6 @@ class LaboratoriumController extends Controller
     }
 
     /**
-     * Menampilkan detail laboratorium tertentu (Opsional, saat ini tidak dipakai di view).
-     */
-    public function show(Laboratorium $laboratorium)
-    {
-        // Jika nanti butuh halaman detail, bisa dibuat view 'laboratorium.show'
-        return view('laboratorium.show', compact('laboratorium'));
-    }
-
-    /**
      * Menampilkan form untuk mengedit laboratorium.
      */
     public function edit(Laboratorium $laboratorium)
@@ -80,7 +71,7 @@ class LaboratoriumController extends Controller
         // Validasi input
         $validatedData = $request->validate([
             // unique:table,column,except,id
-            'nama_lab' => 'required|string|max:100|unique:laboratorium,nama_lab,' . $laboratorium->id,
+            'nama_lab' => 'required|string|max:100|unique:laboratorium,nama_lab,'.$laboratorium->id,
             'kapasitas' => 'required|integer|min:1',
             'fasilitas' => 'nullable|string',
             'kondisi' => 'required|in:baik,perbaikan,rusak',

@@ -1,13 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LaboratoriumController;
 use App\Http\Controllers\PeminjamanController;
-use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UsersController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,8 +18,20 @@ use App\Http\Controllers\ProfileController;
 
 // Halaman utama
 Route::get('/', function () {
-    return view('landing');
+    // Amankan saat tabel belum dimigrasi (mis. fresh install / lingkungan test)
+    $totalLabs = 0;
+    $laboratoriums = collect();
+
+    if (Schema::hasTable('laboratorium')) {
+        $laboratoriums = \App\Models\Laboratorium::latest()->take(4)->get();
+        $totalLabs = \App\Models\Laboratorium::count();
+    }
+
+    return view('landing', compact('totalLabs', 'laboratoriums'));
 })->name('landing');
+
+// Panduan penggunaan (publik)
+Route::view('/panduan', 'panduan')->name('panduan');
 
 // Daftar peminjaman — BISA DI AKSES SEMUA ORANG (termasuk tamu)
 Route::get('/peminjaman', [PeminjamanController::class, 'index'])->name('peminjaman.index');
@@ -41,18 +54,19 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-Route::put('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
 
     // === Profil Pengguna ===
-    // Profil publik sendiri (lihat profil)
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    // Profil publik orang lain
-    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.other');
+    // Penting: route statis "/profile/edit" HARUS di atas "/profile/{user}",
+    // agar tidak tertangkap oleh parameter {user} (menyebabkan 404).
 
     // Edit profil sendiri
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Profil publik sendiri (lihat profil)
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    // Profil publik orang lain
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.other');
 
     // Dashboard: arahkan ke view sesuai role
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
